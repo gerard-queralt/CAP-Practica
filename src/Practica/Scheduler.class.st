@@ -24,34 +24,59 @@ Class {
 	#name : #Scheduler,
 	#superclass : #Object,
 	#classInstVars : [
-		'threadQueue'
+		'threadQueue',
+		'thunkQueue'
 	],
 	#category : #Practica
 }
 
-{ #category : #ThreadManagement }
+{ #category : #initialization }
+Scheduler class >> initialize [
+	super initialize.
+	self threadQueue: Queue new.
+	self thunkQueue: Queue new
+]
+
+{ #category : #threadManagement }
 Scheduler class >> quit [
 	"Stops the currently executing thread and pops it from the queue"
 ]
 
-{ #category : #ThreadManagement }
+{ #category : #threadManagement }
 Scheduler class >> relinquish [
 	"Yields control to another thread"
+	self threadQueue addLast: (Continuation current).
 ]
 
-{ #category : #ThreadManagement }
+{ #category : #threadManagement }
 Scheduler class >> spawn: aThunk [
 	"Adds a thread to the queue"
-	self threadQueue push: aThunk
+	self thunkQueue push: aThunk
 
 ]
 
-{ #category : #ThreadManagement }
+{ #category : #threadManagement }
 Scheduler class >> startThreads [
 	"Starts executing the threads in the queue"
+	self thunkQueue removeFirst value
 ]
 
 { #category : #accessing }
 Scheduler class >> threadQueue [
 	^ threadQueue 
+]
+
+{ #category : #accessing }
+Scheduler class >> threadQueue: aQueue [
+	threadQueue := aQueue
+]
+
+{ #category : #accessing }
+Scheduler class >> thunkQueue [
+	^ thunkQueue
+]
+
+{ #category : #accessing }
+Scheduler class >> thunkQueue: aQueue [
+	thunkQueue := aQueue
 ]
