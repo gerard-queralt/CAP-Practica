@@ -25,6 +25,7 @@ Class {
 	#superclass : #Object,
 	#classInstVars : [
 		'threadQueue',
+		'thunkQueue',
 		'stop'
 	],
 	#category : #Practica
@@ -53,16 +54,48 @@ Scheduler class >> example1 [
 
 ]
 
+{ #category : #tests }
+Scheduler class >> example2: aNumber [
+	| tag fibs makeFibThunk |
+	('fibonacci(' , aNumber asString , ')') traceCr.
+	tag := '[NFIB]'.
+	fibs := Array new: (aNumber+1).
+	
+	makeFibThunk := [ :n |
+		[ n <= 1
+			ifTrue: [ (tag , 'Base case: ') traceCr.
+						 ' fib(0) = 0' traceCr.
+						 ' fib(1) = 1' traceCr.
+						 fibs at: 1 put: 0.
+						 fibs at: 2 put: 1.
+						 Scheduler quit ]
+			ifFalse: [ (tag , 'spawn Fibonacci(' , (n - 1) asString , ') thunk') traceCr.
+						  Scheduler spawn: (makeFibThunk value: (n-1)).
+						  [((fibs at: n) isNil) or: [ (fibs at: n-1) isNil ]] whileTrue:
+																						[ Scheduler relinquish ].
+						  fibs at: (n+1) put: ((fibs at: n) + (fibs at: n-1)).
+						  (tag , 'n = ' , n asString , ' | fib(' , n asString , ') = ' ,
+																			(fibs at: n+1) asString ) traceCr.
+						  Scheduler quit.
+						]
+			] ]. "'makeFibThunk value: N' retorna el bloc sense paràmetres [ n <= 1 ... ]"
+
+	Scheduler initialize.
+	Scheduler spawn: (makeFibThunk value: aNumber).
+	Scheduler startThreads.
+
+]
+
 { #category : #initialization }
 Scheduler class >> initialize [
 	super initialize.
 	self threadQueue: Queue new.
+	self thunkQueue: Queue new.
 ]
 
 { #category : #threadManagement }
 Scheduler class >> quit [
 	"Stops the currently executing thread and pops it from the queue"
-	"self threadQueue addLast: stop."
 	self halt.
 	self threadQueue isNotEmpty ifTrue: [ self threadQueue removeFirst value ]
 	ifFalse: [ self stop value ]
@@ -87,6 +120,7 @@ Scheduler class >> spawn: aThunk [
 	cc isNotNil 
 		ifTrue: [ self threadQueue addLast: cc ]
 		ifFalse: [ aThunk value. ]
+	"self thunkQueue addLast: aThunk"
 
 ]
 
@@ -94,6 +128,14 @@ Scheduler class >> spawn: aThunk [
 Scheduler class >> startThreads [
 	"Starts executing the threads in the queue"
 	self stop: [ ^nil ].
+	"[ self thunkQueue isNotEmpty ] whileTrue: [ 
+		| cc thunk |
+		thunk := self thunkQueue removeFirst.
+		cc := Continuation current.
+		cc isNotNil 
+			ifTrue: [ self threadQueue addLast: cc ]
+			ifFalse: [ thunk value. ]	
+	]."
 	self threadQueue removeFirst value.
 ]
 
@@ -115,4 +157,16 @@ Scheduler class >> threadQueue [
 { #category : #accessing }
 Scheduler class >> threadQueue: aQueue [
 	threadQueue := aQueue
+]
+
+{ #category : #accessing }
+Scheduler class >> thunkQueue [
+	"La thunkQueue probablement no es necessaria"
+	^ thunkQueue 
+]
+
+{ #category : #accessing }
+Scheduler class >> thunkQueue: aQueue [
+	"La thunkQueue probablement no es necessaria"
+	thunkQueue := aQueue
 ]
