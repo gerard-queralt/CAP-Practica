@@ -25,40 +25,86 @@ Class {
 	#superclass : #Object,
 	#classInstVars : [
 		'threadQueue',
-		'thunkQueue'
+		'stop'
 	],
 	#category : #Practica
 }
+
+{ #category : #tests }
+Scheduler class >> example1 [
+	"Scheduler example1"
+	| makeThreadThunk counter |
+	counter := 10.
+	makeThreadThunk := [ :nom |
+		| loop |
+		loop := [ counter < 0
+						ifTrue: [ Scheduler quit ].
+					('In thread ' , nom , ' - counter = ' , counter asString) traceCr.
+					counter := counter - 1.
+					Scheduler relinquish.
+					loop value. ].
+		loop ]. "Retorna el bloc sense paràmetres que hem anomenat loop"
+				  "Aquest serà el codi que s'executarà en cada fil"
+	Scheduler initialize.
+	Scheduler spawn: (makeThreadThunk value: 'a').
+	Scheduler spawn: (makeThreadThunk value: 'b').
+	Scheduler spawn: (makeThreadThunk value: 'c').
+	Scheduler startThreads.
+
+]
 
 { #category : #initialization }
 Scheduler class >> initialize [
 	super initialize.
 	self threadQueue: Queue new.
-	self thunkQueue: Queue new
 ]
 
 { #category : #threadManagement }
 Scheduler class >> quit [
 	"Stops the currently executing thread and pops it from the queue"
+	"self threadQueue addLast: stop."
+	self halt.
+	self threadQueue isNotEmpty ifTrue: [ self threadQueue removeFirst value ]
+	ifFalse: [ self stop value ]
 ]
 
 { #category : #threadManagement }
 Scheduler class >> relinquish [
 	"Yields control to another thread"
-	self threadQueue addLast: (Continuation current).
+	| cc |
+	cc := Continuation current.
+	cc isNotNil
+		ifTrue: [ self threadQueue addLast: cc.
+					 self threadQueue removeFirst value ].
 ]
 
 { #category : #threadManagement }
 Scheduler class >> spawn: aThunk [
 	"Adds a thread to the queue"
-	self thunkQueue push: aThunk
+	| cc |
+	cc := Continuation current.
+	self stop: [ ^nil ].
+	cc isNotNil 
+		ifTrue: [ self threadQueue addLast: cc ]
+		ifFalse: [ aThunk value. ]
 
 ]
 
 { #category : #threadManagement }
 Scheduler class >> startThreads [
 	"Starts executing the threads in the queue"
-	self thunkQueue removeFirst value
+	self stop: [ ^nil ].
+	self threadQueue removeFirst value.
+]
+
+{ #category : #accessing }
+Scheduler class >> stop [
+	^ stop
+]
+
+{ #category : #accessing }
+Scheduler class >> stop: aBlock [
+	stop := aBlock
 ]
 
 { #category : #accessing }
@@ -69,14 +115,4 @@ Scheduler class >> threadQueue [
 { #category : #accessing }
 Scheduler class >> threadQueue: aQueue [
 	threadQueue := aQueue
-]
-
-{ #category : #accessing }
-Scheduler class >> thunkQueue [
-	^ thunkQueue
-]
-
-{ #category : #accessing }
-Scheduler class >> thunkQueue: aQueue [
-	thunkQueue := aQueue
 ]
