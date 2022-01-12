@@ -116,7 +116,7 @@ Scheduler class >> spawn: aThunk [
 	"Adds a thread to the queue"
 	| cc |
 	cc := Continuation current.
-	self stop: [ ^nil ].
+	"self stop: [ ^nil ]."
 	cc isNotNil 
 		ifTrue: [ self threadQueue addLast: cc ]
 		ifFalse: [ aThunk value. ]
