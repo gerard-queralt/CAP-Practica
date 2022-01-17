@@ -25,7 +25,6 @@ Class {
 	#superclass : #Object,
 	#classInstVars : [
 		'threadQueue',
-		'thunkQueue',
 		'stop'
 	],
 	#category : #Practica
@@ -89,8 +88,7 @@ Scheduler class >> example2: aNumber [
 { #category : #initialization }
 Scheduler class >> initialize [
 	super initialize.
-	self threadQueue: Queue new.
-	self thunkQueue: Queue new.
+	self threadQueue: Queue new
 ]
 
 { #category : #threadManagement }
@@ -142,16 +140,4 @@ Scheduler class >> threadQueue [
 { #category : #accessing }
 Scheduler class >> threadQueue: aQueue [
 	threadQueue := aQueue
-]
-
-{ #category : #accessing }
-Scheduler class >> thunkQueue [
-	"La thunkQueue probablement no es necessaria"
-	^ thunkQueue 
-]
-
-{ #category : #accessing }
-Scheduler class >> thunkQueue: aQueue [
-	"La thunkQueue probablement no es necessaria"
-	thunkQueue := aQueue
 ]
