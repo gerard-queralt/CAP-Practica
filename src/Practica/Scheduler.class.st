@@ -106,9 +106,9 @@ Scheduler class >> relinquish [
 	"Yields control to another thread"
 	| cc |
 	cc := Continuation current.
-	cc isNotNil
+	cc isNotNil and: [ self threadQueue notEmpty 
 		ifTrue: [ self threadQueue addLast: cc.
-					 self threadQueue removeFirst value ].
+					 self threadQueue removeFirst value ] ]
 ]
 
 { #category : #threadManagement }
@@ -117,9 +117,9 @@ Scheduler class >> spawn: aThunk [
 	| cc |
 	cc := Continuation current.
 	"self stop: [ ^nil ]."
-	cc isNotNil 
+	(cc isNotNil and: [ self threadQueue notEmpty ])
 		ifTrue: [ self threadQueue addLast: cc ]
-		ifFalse: [ aThunk value. ]
+		ifFalse: [ aThunk value. self quit ]
 	"self thunkQueue addLast: aThunk"
 
 ]
@@ -136,7 +136,7 @@ Scheduler class >> startThreads [
 			ifTrue: [ self threadQueue addLast: cc ]
 			ifFalse: [ thunk value. ]	
 	]."
-	self threadQueue removeFirst value.
+	self threadQueue notEmpty ifTrue: [ self threadQueue removeFirst value ]
 ]
 
 { #category : #accessing }
