@@ -96,7 +96,6 @@ Scheduler class >> initialize [
 { #category : #threadManagement }
 Scheduler class >> quit [
 	"Stops the currently executing thread and pops it from the queue"
-	self halt.
 	self threadQueue isNotEmpty ifTrue: [ self threadQueue removeFirst value ]
 	ifFalse: [ self stop value ]
 ]
@@ -114,13 +113,7 @@ Scheduler class >> relinquish [
 { #category : #threadManagement }
 Scheduler class >> spawn: aThunk [
 	"Adds a thread to the queue"
-	| cc |
-	cc := Continuation current.
-	"self stop: [ ^nil ]."
-	cc isNotNil
-		ifTrue: [ self threadQueue addLast: cc ]
-		ifFalse: [ aThunk value. self quit ]
-	"self thunkQueue addLast: aThunk"
+	self threadQueue addLast: aThunk
 
 ]
 
@@ -128,14 +121,6 @@ Scheduler class >> spawn: aThunk [
 Scheduler class >> startThreads [
 	"Starts executing the threads in the queue"
 	self stop: [ ^nil ].
-	"[ self thunkQueue isNotEmpty ] whileTrue: [ 
-		| cc thunk |
-		thunk := self thunkQueue removeFirst.
-		cc := Continuation current.
-		cc isNotNil 
-			ifTrue: [ self threadQueue addLast: cc ]
-			ifFalse: [ thunk value. ]	
-	]."
 	self threadQueue notEmpty ifTrue: [ self threadQueue removeFirst value ]
 ]
 
