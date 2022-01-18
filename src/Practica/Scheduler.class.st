@@ -106,6 +106,31 @@ Scheduler class >> example3: aNumber [
 	Scheduler startThreads.
 ]
 
+{ #category : #tests }
+Scheduler class >> example4: aBlock to: aCollection [
+	"Implementacio de map"
+	"Scheduler example4: [ :x | x*2 ] to: #(1 2 3)"
+	| size result mapThunk |
+	size := aCollection size.
+	result := Array new: size.
+	mapThunk := [ :pos |
+		[ size < pos
+			ifFalse: [ 
+				| valAtPos |
+				valAtPos := aCollection at: pos.
+				result at: pos put: (aBlock value: valAtPos).
+				(pos asString, '=', (result at: pos) asString) traceCr.
+				Scheduler spawn: (mapThunk value: pos + 1).
+				Scheduler quit.
+			]
+		] ].
+
+	Scheduler initialize.
+	Scheduler spawn: (mapThunk value: 1).
+	Scheduler startThreads.
+	^ result
+]
+
 { #category : #initialization }
 Scheduler class >> initialize [
 	super initialize.
