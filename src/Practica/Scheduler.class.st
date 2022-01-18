@@ -131,6 +131,24 @@ Scheduler class >> example4: aBlock to: aCollection [
 	^ result
 ]
 
+{ #category : #tests }
+Scheduler class >> example5: aCollection [
+	"Mostra al transcript una col·leccio invertida"
+	| reverseThunk |
+	reverseThunk := [ :s | [ 
+			s == 0
+				ifFalse: [ 
+					((aCollection at: s) asString) trace.
+					Scheduler spawn: (reverseThunk value: s - 1).
+					Scheduler quit
+					]
+			] ].
+	
+	Scheduler initialize.
+	Scheduler spawn: (reverseThunk value: (aCollection size)).
+	Scheduler startThreads.
+]
+
 { #category : #initialization }
 Scheduler class >> initialize [
 	super initialize.
