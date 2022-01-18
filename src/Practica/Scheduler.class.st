@@ -85,6 +85,27 @@ Scheduler class >> example2: aNumber [
 
 ]
 
+{ #category : #tests }
+Scheduler class >> example3: aNumber [
+	"Calculates the factorial of a number"
+	| fact factThunk |
+	fact := Array new: aNumber.
+	factThunk := [ :n |
+		[  n <= 1
+			ifTrue: [ (n asString, '! = 1') traceCr.
+						 fact at: 1 put: 1.
+				       Scheduler quit. ]
+			ifFalse: [ Scheduler spawn: (factThunk value: n - 1).
+						  [ (fact at: (n-1)) isNil ] whileTrue: [ Scheduler relinquish ].
+						  fact at: n put: (fact at: (n-1)) * n.
+						  (n asString, '! = ', (fact at: n) asString) traceCr.
+						  Scheduler quit. ]
+		] ].
+	Scheduler initialize.
+	Scheduler spawn: (factThunk value: aNumber).
+	Scheduler startThreads.
+]
+
 { #category : #initialization }
 Scheduler class >> initialize [
 	super initialize.
