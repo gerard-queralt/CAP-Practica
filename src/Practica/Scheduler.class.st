@@ -86,7 +86,7 @@ Scheduler class >> example2: aNumber [
 ]
 
 { #category : #tests }
-Scheduler class >> example3: aNumber [
+Scheduler class >> factorial: aNumber [
 	"Calculates the factorial of a number"
 	| fact factThunk |
 	fact := Array new: aNumber.
@@ -106,8 +106,14 @@ Scheduler class >> example3: aNumber [
 	Scheduler startThreads.
 ]
 
+{ #category : #initialization }
+Scheduler class >> initialize [
+	super initialize.
+	self threadQueue: Queue new
+]
+
 { #category : #tests }
-Scheduler class >> example4: aBlock to: aCollection [
+Scheduler class >> map: aBlock to: aCollection [
 	"Implementacio de map"
 	"Scheduler example4: [ :x | x*2 ] to: #(1 2 3)"
 	| size result mapThunk |
@@ -131,30 +137,6 @@ Scheduler class >> example4: aBlock to: aCollection [
 	^ result
 ]
 
-{ #category : #tests }
-Scheduler class >> example5: aCollection [
-	"Mostra al transcript una col·leccio invertida"
-	| reverseThunk |
-	reverseThunk := [ :s | [ 
-			s == 0
-				ifFalse: [ 
-					((aCollection at: s) asString) trace.
-					Scheduler spawn: (reverseThunk value: s - 1).
-					Scheduler quit
-					]
-			] ].
-	
-	Scheduler initialize.
-	Scheduler spawn: (reverseThunk value: (aCollection size)).
-	Scheduler startThreads.
-]
-
-{ #category : #initialization }
-Scheduler class >> initialize [
-	super initialize.
-	self threadQueue: Queue new
-]
-
 { #category : #threadManagement }
 Scheduler class >> quit [
 	"Stops the currently executing thread and pops it from the queue"
@@ -170,6 +152,24 @@ Scheduler class >> relinquish [
 	(cc isNotNil and: [ self threadQueue notEmpty ])
 		ifTrue: [ self threadQueue addLast: cc.
 					 self threadQueue removeFirst value ]
+]
+
+{ #category : #tests }
+Scheduler class >> reverse: aCollection [
+	"Mostra al transcript una col·leccio invertida"
+	| reverseThunk |
+	reverseThunk := [ :s | [ 
+			s == 0
+				ifFalse: [ 
+					((aCollection at: s) asString) trace.
+					Scheduler spawn: (reverseThunk value: s - 1).
+					Scheduler quit
+					]
+			] ].
+	
+	Scheduler initialize.
+	Scheduler spawn: (reverseThunk value: (aCollection size)).
+	Scheduler startThreads.
 ]
 
 { #category : #threadManagement }
