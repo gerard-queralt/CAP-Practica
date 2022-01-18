@@ -87,7 +87,8 @@ Scheduler class >> example2: aNumber [
 
 { #category : #tests }
 Scheduler class >> factorial: aNumber [
-	"Calculates the factorial of a number"
+	"Calcula el factorial d'un nombre"
+	"Scheduler factorial: 5"
 	| fact factThunk |
 	fact := Array new: aNumber.
 	factThunk := [ :n |
@@ -157,6 +158,7 @@ Scheduler class >> relinquish [
 { #category : #tests }
 Scheduler class >> reverse: aCollection [
 	"Mostra al transcript una col·leccio invertida"
+	"Scheduler reverse: 'banana'"
 	| reverseThunk |
 	reverseThunk := [ :s | [ 
 			s == 0
